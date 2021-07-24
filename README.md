@@ -6,5 +6,5 @@ Sequences are retrieved according to submission date but leveraged according to 
 FastaSplit.sh is used to separate the merged sequence file from GISAID into single genome fasta files.
 
 ## Bioinformatic analysis for mutation calling
-
+SNPs and INDELs are determined by a bioinformatic framework proposed by Massacci, et al. (2020). Here, MutationCalling.sh is used to extract the SNPs and INDELs. And a R script, Mercatelli_and_Giorgi.R, adapted from Mercatelli and Giorgi (2020) is used to summarize the mutation information and translate them into proteins.
 
