@@ -21,7 +21,7 @@ The topological overlap measure based clustering is utilized to identify modules
 Mutations with connection strengths to any other intra-modular nodes larger than a cutoff are chosen as core mutations to determine a variant. WeightedNetworkAnalysis.R also shows how to detect core mutations for variant definition.
 
 ## Phylogenetic branch assessment
-Phylogenetic analysis might be necessary for further validation of genome sequences defined by module core mutations. We use the NextStrainPipeline.txt to get a time-resolved tree for phylogenetic assessment.
+Phylogenetic analysis might be necessary for further validation of genome sequences defined by module core mutations. We use the NextStrainPipeline.txt to get a time-resolved tree for phylogenetic assessment. PhylogeneticBranchAssessment.R is used to generate the phylogenetic tree.
 
 ## References
 Massacci A, Sperandio E, D'Ambrosio L, Maffei M, Palombo F, Aurisicchio L, Ciliberto G, Pallocca M. 2020. Design of a companion bioinformatic tool to detect the emergence and geographical distribution of SARS-CoV-2 Spike protein genetic variants. J Transl Med. 18(1):494.  
