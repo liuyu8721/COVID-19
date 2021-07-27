@@ -14,3 +14,6 @@ Following, we assume that most of the mutation events are randomly introduced an
 ## Weighted network construction
 Mutations represented by FTMs are referred to as nodes and pairwise synchronous relationships are quantified using Pearson correlation.
 
+## References
+Massacci A, Sperandio E, D'Ambrosio L, Maffei M, Palombo F, Aurisicchio L, Ciliberto G, Pallocca M. 2020. Design of a companion bioinformatic tool to detect the emergence and geographical distribution of SARS-CoV-2 Spike protein genetic variants. J Transl Med. 18(1):494.  
+Mercatelli D, Giorgi FM. 2020. Geographic and genomic distribution of SARS-CoV-2 mutations. Front Microbiol. 11:1800.
