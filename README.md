@@ -18,7 +18,7 @@ Mutations represented by FTMs are referred to as nodes and pairwise synchronous 
 The topological overlap measure based clustering is utilized to identify modules which may help us to detect and define variants.
 
 ## Core mutations for variant determination
-Mutations with connection strengths to any other intra-modular nodes larger than a cutoff are chosen as core mutations to determine a variant.
+Mutations with connection strengths to any other intra-modular nodes larger than a cutoff are chosen as core mutations to determine a variant. WeightedNetworkAnalysis.R also shows how to detect core mutations for variant definition.
 
 ## Phylogenetic branch assessment
 Phylogenetic analysis might be necessary for further validation of genome sequences defined by module core mutations. 
