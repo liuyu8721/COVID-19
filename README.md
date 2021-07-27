@@ -15,7 +15,7 @@ Following, we assume that most of the mutation events are randomly introduced an
 Mutations represented by FTMs are referred to as nodes and pairwise synchronous relationships are quantified using Pearson correlation. WeightedNetworkAnalysis.R shows how to create a weighted network model for FTMs.
 
 ## Module identification
-The topological overlap measure based clustering is utilized to identify modules which may help us to detect and define variants.
+The topological overlap measure based clustering is utilized to identify modules which may help us to detect and define variants. WeightedNetworkAnalysis.R also shows how to use a dynamic cut-tree algorithm (Langfelder, et al. 2008) to determine the modules.
 
 ## Core mutations for variant determination
 Mutations with connection strengths to any other intra-modular nodes larger than a cutoff are chosen as core mutations to determine a variant. WeightedNetworkAnalysis.R also shows how to detect core mutations for variant definition.
@@ -25,5 +25,7 @@ Phylogenetic analysis might be necessary for further validation of genome sequen
 
 ## References
 Massacci A, Sperandio E, D'Ambrosio L, Maffei M, Palombo F, Aurisicchio L, Ciliberto G, Pallocca M. 2020. Design of a companion bioinformatic tool to detect the emergence and geographical distribution of SARS-CoV-2 Spike protein genetic variants. J Transl Med. 18(1):494.  
-Mercatelli D, Giorgi FM. 2020. Geographic and genomic distribution of SARS-CoV-2 mutations. Front Microbiol. 11:1800.
+Mercatelli D, Giorgi FM. 2020. Geographic and genomic distribution of SARS-CoV-2 mutations. Front Microbiol. 11:1800.  
+Langfelder P, Zhang B, Horvath S. 2008. Defining clusters from a hierarchical cluster tree: the dynamic tree cut package for R. Bioinformatics 24(5):719-720.
+
 
