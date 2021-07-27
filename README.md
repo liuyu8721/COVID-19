@@ -12,7 +12,7 @@ A mutation frequency at a sampling week on a specific site was calculated as the
 Following, we assume that most of the mutation events are randomly introduced and could not accumulate in the population over time. A hierarchical clustering analysis using Ward's method was applied to group and exclude them before investigating the temporal clustering patterns. To accelerate the calculation, all mutation frequencies less than a threshold (e.g. 0.1%) were first excluded.
 
 ## Weighted network construction
-Mutations represented by FTMs are referred to as nodes and pairwise synchronous relationships are quantified using Pearson correlation.
+Mutations represented by FTMs are referred to as nodes and pairwise synchronous relationships are quantified using Pearson correlation. WeightedNetworkAnalysis.R shows how to create a weighted network model for FTMs.
 
 ## Module identification
 The topological overlap measure based clustering is utilized to identify modules which may help us to detect and define variants.
