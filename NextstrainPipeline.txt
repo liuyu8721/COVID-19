@@ -1,0 +1,47 @@
+### Index the Sequences
+### Precalculate the composition of the sequences (e.g., numbers of nucleotides, gaps, invalid characters, and total sequence length) prior to filtering. The resulting sequence index speeds up subsequent filter steps especially in more complex workflows.
+augur index --sequences data/sequences.fasta --output results/sequence_index.tsv
+
+### Filter the Sequences
+### Filter the parsed sequences and metadata to exclude strains from subsequent analysis and subsample the remaining strains to a fixed number of samples per group.
+augur filter \
+--sequences data/sequences.fasta \
+--sequence-index results/sequence_index.tsv \
+--metadata data/metadata.tsv \
+--output results/filtered.fasta \
+--min-length 29000 \
+--group-by year month \
+--output-metadata results/maintain.txt
+
+### Align the Sequences
+### Create a multi-sequence alignment using a custom reference. After this alignment, columns with gaps in the reference are removed. Additionally, the --fill-gaps flag fills gaps in non-reference sequences with “N” characters. These modifications force all sequences into the same coordinate space as the reference sequence.
+augur align \
+--nthreads 10 \
+--sequences results/filtered.fasta \
+--reference-sequence config/NC_045512.2.fa \
+--output results/aligned.fasta \
+--fill-gaps
+
+### Construct the Phylogeny
+### Infer a phylogenetic tree from the multi-sequence alignment.
+augur tree \
+--alignment results/aligned.fasta \
+--output results/tree_raw.nwk
+
+### Get a Time-Resolved Tree
+### Augur can also adjust branch lengths in this tree to position tips by their sample date and infer the most likely time of their ancestors, using TreeTime. Run the refine command to apply TreeTime to the original phylogenetic tree and produce a “time tree”.
+### In addition to assigning times to internal nodes, the refine command filters tips that are likely outliers and assigns confidence intervals to inferred dates. Branch lengths in the resulting Newick tree measure adjusted nucleotide divergence. All other data inferred by TreeTime is stored by strain or internal node name in the corresponding JSON file.
+augur refine \
+--tree results/tree_raw.nwk \
+--alignment results/aligned.fasta \
+--metadata data/metadata.tsv \
+--output-tree results/tree.nwk \
+--output-node-data results/branch_lengths.json \
+--timetree \
+--coalescent opt \
+--date-confidence \
+--date-inference marginal \
+--clock-filter-iqd 4
+
+
+
