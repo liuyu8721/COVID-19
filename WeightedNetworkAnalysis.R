@@ -1,12 +1,5 @@
 rm(list=ls())
 library(tidyverse)
-# suppressMessages()
-# library(ggplot2)
-# library(pheatmap)
-# library(NbClust)
-# suppressMessages(library(reshape2))
-# library(RColorBrewer)
-# Sys.setlocale("LC_TIME", "English")
 
 setwd("D:/00SARS-Cov-2/GibHub")
 load("./data/Worldwide/Worldwide_hm.RData")
