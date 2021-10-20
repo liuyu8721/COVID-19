@@ -1,47 +1,82 @@
+###################################################################################################
+### We took India data as an example to show how to perform FTM filtration
+###################################################################################################
+
 rm(list=ls())
 library(tidyverse)
-library(pheatmap)
-library(ggplot2)
-library(RColorBrewer)
-Sys.setlocale("LC_TIME", "English")
+
+setwd("D:/00SARS-Cov-2/GibHub")
+load("./data/calendar.RData")
+
+###################################################################################################
+### Summary of FTMs
+###################################################################################################
+
+p.data <- data.frame()
+seg.list <- c("5'UTR", "NSP1", "NSP2", "NSP3", "NSP4", "NSP5", "NSP6", "NSP7", "NSP8", "NSP9",
+              "NSP10", "NSP12a", "NSP12b", "NSP13", "NSP14", "NSP15", "NSP16", "S", "ORF3a", "E",
+              "M", "ORF6", "ORF7a", "ORF7b", "ORF8", "N", "ORF10", "3'UTR")
+for (seg in seg.list) {
+  x <- read.delim2(paste0("FTM_India_", seg, ".txt"), header = T, sep = ";")
+  x$segment2 <- seg
+  p.data <- rbind(p.data, x)
+}
+
+p.data <- p.data %>%
+  filter(!(mutation %in% c("CAT28253.", "CTA28093.", "TAAATT27134.", "TCAGTT27618.", "TGG26465.") & varclass=="deletion")) %>%
+  mutate(anno = paste0(segment2, ":", mutation, ",", ifelse(segment2 %in% c("5'UTR", "3'URT", "Intergenic"), "Extragenic", variant)))
+p.data <- p.data %>%
+  mutate(col.week = factor(colWeek, labels = format(calendar$Start, "%b %d, %y")),
+         ratio = as.numeric(ratio),
+         segment2 = factor(segment2, levels = seg.list))
 
 ###################################################################################################
 ### FTM filtreation
 ###################################################################################################
 
-load("./RData/hm.RData")
-hm.TF <- (hm.data>0.1)
+hm.data <- pivot_wider(data = p.data,
+                       id_cols = anno,
+                       names_from = colWeek,
+                       names_prefix = "Col.",
+                       values_from = ratio)
+hm.data <- as.data.frame(hm.data)
+for (c in 2:ncol(hm.data)) {
+  hm.data[,c]  <- as.numeric(hm.data[,c])
+}
+hm.data2 <- as.matrix(hm.data[,-1])
+rownames(hm.data2) <- hm.data$anno
+colnames(hm.data2) <- word(colnames(hm.data)[-1], 2, 2, fixed("."))
+head(hm.data2)
+hm.data <- hm.data2
+rm(hm.data2)
+
+# Filtering according to the relative abundance
+hm.TF <- (hm.data>10)
 hm.TF <- apply(hm.TF, 1, sum)
 hm.data <- hm.data[hm.TF>0,]
 dim(hm.data)
 
-hm.eucl <- dist(hm.data, method = "euclidean")
-hc <- hclust(hm.eucl, method = "ward.D")
+### Filtering according to the absolute amount of case
+hm.count <- pivot_wider(data = p.data,
+                        id_cols = anno,
+                        names_from = colWeek,
+                        names_prefix = "Col.",
+                        values_from = Freq)
+hm.count2 <- as.matrix(hm.count[,-1])
+rownames(hm.count2) <- hm.count$anno
+colnames(hm.count2) <- word(colnames(hm.count)[-1], 2, 2, fixed("."))
+head(hm.count2)
+hm.count <- hm.count2
+rm(hm.count2)
+hm.count <- hm.count[rownames(hm.data),]
 
-### Selecting an appropriate cluster number for dendrogram cutting.
-library(factoextra)
-set.seed(1234)
-fviz_nbclust(hm.data, FUNcluster = hcut, method = "gap_stat", diss = hm.eucl, k.max = 10, nboot = 100) +
-  geom_vline(xintercept = c(5, 8), linetype = 2) +
-  theme(axis.text.x = element_text(angle = 90))
+hm.TF <- (hm.count>10)
+hm.TF <- apply(hm.TF, 1, sum)
+hm.count <- hm.count[hm.TF>0,]
+hm.data.cpa <- hm.data[rownames(hm.count),]
+dim(hm.count)
 
-plot(hc, labels = FALSE)
-re <- rect.hclust(hc, k = 5)
-re.hm <- data.frame()
-for (i in 1:length(re)) {
-        re.hm <- rbind(re.hm,
-                       data.frame(d = i,
-                                  n = length(re[[i]])))
-}
-re.hm <- re.hm[order(re.hm$n, decreasing = T),]
-re.hm
-
-re.hm.rest <- re.hm[-1,]
-r.lab <- c()
-for (i in 1:nrow(re.hm.rest)) {
-        r.lab <- c(r.lab, re[[re.hm.rest$d[i]]])
-}
-
-hm.wna <- hm.data[names(r.lab),]
-pheatmap(t(hm.wna[,60:1]), cluster_rows = F)
-
+library(pheatmap)
+# pdf("India_EpidemicMutations.pdf", height = 7, width = 14)
+pheatmap(t(hm.data.cpa[,81:1]), cluster_rows = F, legend = F,fontsize = 6)
+# dev.off()
