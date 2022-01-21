@@ -4,25 +4,37 @@
 
 rm(list=ls())
 library(tidyverse)
+Sys.setlocale("LC_TIME", "English")
 
 setwd("D:/00SARS-Cov-2/GibHub")
-load("./data/calendar.RData")
 
 ###################################################################################################
 ### Data praperation
 ###################################################################################################
 
-# load("./data/all.meta.RData")
-# load("./data/all.muta.RData")
-
+# load("all.meta.RData")
+# load("all.muta.RData")
+# load("all.muta.list.RData")
+# load("calendar.RData")
+# 
 # India.meta <- all.meta %>%
-#   mutate(colWeek = strftime(Collection.date, format="%Y-%U")) %>%
-#   mutate(colWeek = ifelse(colWeek == "2021-00", "2020-52", colWeek)) %>%
-#   filter(collect.year %in% c("2020", "2021") & !(colWeek %in% c("2020-00", "2021-30")) & country=="India")
-# save(India.meta, file = "./data/India/India.meta.RData")
-
+#   filter(colWeek %in% calendar$colWeek & country=="India")
 # India.muta <- subset(all.muta, sample %in% India.meta$Accession.ID)
+# India.muta.list <- subset(all.muta.list, sample %in% India.meta$Accession.ID)
+# 
+# dim(India.meta)
+# dim(India.muta)
+# length(unique(India.muta$sample))
+# 
+# nsample <- data.frame(table(India.meta$colWeek))
+# names(nsample) <- c("colWeek", "n")
+# calendar <- merge(calendar[, c("colWeek", "Start", "End")], nsample, all.x = T)
+# calendar[is.na(calendar)] <- 0
+# 
+# save(India.meta, file = "./data/India/India.meta.RData")
 # save(India.muta, file = "./data/India/India.muta.RData")
+# save(India.muta.list, file = "./data/India/India.muta.list.RData")
+# save(calendar, file = "./data/India/calendar.RData")
 
 ###################################################################################################
 ### Sample size
@@ -30,6 +42,7 @@ load("./data/calendar.RData")
 
 load("./data/India/India.meta.RData")
 load("./data/India/India.muta.RData")
+load("./data/India/calendar.RData")
 
 dim(India.meta)
 dim(India.muta)
@@ -46,17 +59,18 @@ nsample <- merge(calendar[,c("colWeek", "Start")], nsample, by = "colWeek", all.
   mutate(n = ifelse(is.na(n), 0.1, n))
 nsample
 
-ts.label <- format(calendar$Start, "%b %d, %y")
-ts.label[seq(2, 81, 2)] <- ""
-# pdf("India_SampleDistribution.pdf", width = 10, height = 6)
+ts.label <- rep("", nrow(calendar))
+ts.label[seq(1, 99, 2)] <- format(calendar$Start[seq(1, 99, 2)], "%b %d, %y")
+
+# pdf("India_SampleDistribution.pdf", width = 14, height = 2)
 ggplot(nsample, aes(x = colWeek, y = n, group = 1)) +
   geom_line(size = 1.5, col = "#386CB0") +  
   geom_point(pch = 16, size = 2, col = "#FC8D62") +
   geom_point(pch = 1, size = 2, col = "#386CB0") +
   scale_x_discrete(labels = ts.label) +
-  scale_y_continuous(limits = c(0, 1200), breaks = seq(0, 1200, 200)) +
+  scale_y_continuous(limits = c(0, 3000), breaks = seq(0, 3000, 500)) +
   scale_color_manual(values = RColorBrewer::brewer.pal(8, "Dark2")) +
-  labs(x = "Sampling week", y = "Number of SARS-CoV-2 sequences") +
+  labs(x = "", y = "") +
   # guides(colour = guide_legend(nrow = 1)) +
   theme(panel.background = element_blank(),
         panel.border = element_rect(fill = NA),
@@ -65,10 +79,11 @@ ggplot(nsample, aes(x = colWeek, y = n, group = 1)) +
         legend.background = element_blank(),
         legend.title = element_text(face = "bold"),
         legend.key = element_rect(fill = NA),
-        axis.title = element_text(size = 14),
-        axis.text.y = element_text(size = 12),
-        axis.text.x = element_text(angle = 45, hjust = 1, vjust = 1, size = 12))
+        # axis.title = element_text(size = 14),
+        # axis.text.y = element_text(size = 12),
+        axis.text.x = element_text(angle = 45, hjust = 1, vjust = 1))
 # dev.off()
+
 
 ###################################################################################################
 ### Epidemic strains
@@ -91,7 +106,7 @@ ggplot(data = wc, aes(x = colWeek, fill = Clade)) +
   scale_fill_discrete(type = c(RColorBrewer::brewer.pal(4, "Set2"),  RColorBrewer::brewer.pal(6, "Accent"))) +
   scale_x_discrete(labels = ts.label) +
   # scale_y_continuous(limits = c(0, 100), breaks = seq(0, 100, 25), labels = c("0", "25", "50", "75", "100")) +
-  guides(fill = guide_legend(ncol = 1, reverse = T)) +
+  guides(fill = guide_legend(nrow = 1, reverse = T)) +
   labs(x = "Sampling week", y = "Proportion of epidemic strain (%)", fill = "Clade") +
   theme(axis.text.x = element_text(angle = 45, hjust = 1, vjust = 1, size = 12),
         axis.text.y = element_text(size = 12),
@@ -99,12 +114,25 @@ ggplot(data = wc, aes(x = colWeek, fill = Clade)) +
         panel.background = element_blank(),
         panel.border = element_rect(fill = NA),
         panel.grid.major.x = element_line(colour = "grey88"),
-        legend.position = "right")
+        legend.position = "top")
 # dev.off()
+
 
 ###################################################################################################
 ### Frequency Trajectories of Mutations by segment
 ###################################################################################################
+
+load("./data/India/muta.anno.RData")
+all.muta <- merge(India.muta, 
+                         muta.anno[, c("mutation", "refpos", "protein", "variant", "varclass", "annotation")], 
+                         all = F)
+all.muta <- all.muta %>%
+  rename(segment2 = protein) %>%
+  mutate(mutation =  paste0(refvar, refpos, qvar))
+temp <- subset(all.meta, Accession.ID %in% unique(all.muta$sample), select = c("Accession.ID", "colWeek"))
+all.muta <- merge(all.muta, temp, 
+                  by.x = "sample", by.y = "Accession.ID", all = F)
+rm(temp)
 
 muta.tab <- table(all.muta$segment2)
 muta.tab
@@ -167,5 +195,43 @@ for (seg in names(muta.tab)) {
   pdf(paste0("FTM_India_", seg, ".pdf"), width = 14, height = 7)
   print(mf.ts)
   dev.off()
-  write.table(muta.detail, paste0("FTM_India_", seg, ".txt"), row.names = F, quote = F, sep = ";")
+  write.table(muta.detail, paste0("./data/India/FTM/FTM_India_", seg, ".txt"), row.names = F, quote = F, sep = ";")
 }
+
+###################################################################################################
+### Summary of FTMs
+###################################################################################################
+
+p.data <- data.frame()
+seg.list <- c("5'UTR", "NSP1", "NSP2", "NSP3", "NSP4", "NSP5", "NSP6", "NSP7", "NSP8", "NSP9",
+              "NSP10", "NSP12a", "NSP12b", "NSP13", "NSP14", "NSP15", "NSP16", "S", "ORF3a", "E",
+              "M", "ORF6", "ORF7a", "ORF7b", "ORF8", "N", "ORF10", "3'UTR")
+for (seg in seg.list) {
+  x <- read.delim2(paste0("./data/India/FTM/FTM_India_", seg, ".txt"), header = T, sep = ";")
+  x$segment2 <- seg
+  p.data <- rbind(p.data, x)
+}
+
+p.data <- subset(p.data, !(segment2=="3'UTR" & position <= 29674))
+p.data <- p.data %>%
+  mutate(anno = paste0(segment2, ":", mutation, ",", ifelse(segment2 %in% c("5'UTR", "3'UTR"), "Extragenic", variant))) %>%
+  filter(mutation!="A28273.")
+save(p.data, file = "./data/India/India.p.data.RData")
+
+hm.data <- pivot_wider(data = p.data,
+                       id_cols = anno,
+                       names_from = colWeek,
+                       names_prefix = "Col.",
+                       values_from = ratio)
+hm.data <- as.data.frame(hm.data)
+for (c in 2:ncol(hm.data)) {
+  hm.data[,c]  <- as.numeric(hm.data[,c])
+}
+hm.data2 <- as.matrix(hm.data[,-1])
+rownames(hm.data2) <- hm.data$anno
+colnames(hm.data2) <- word(colnames(hm.data)[-1], 2, 2, fixed("."))
+head(hm.data2)
+hm.data <- hm.data2
+rm(hm.data2)
+India.hm.data <- hm.data
+save(India.hm.data, file = "./data/India/India.hm.data.RData")
